@@ -1,0 +1,1 @@
+(typeof(cmSetAvid) == 'function') && cmSetAvid();

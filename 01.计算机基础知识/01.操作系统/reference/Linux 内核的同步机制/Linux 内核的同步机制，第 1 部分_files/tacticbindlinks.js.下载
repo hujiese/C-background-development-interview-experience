@@ -1,0 +1,7 @@
+/*! 
+	tacticbindlinks.source.js,
+	1.3
+	2017-11-21
+	Santelia
+*/
+var tcPassingBindAllIwmLinks=function(){var e="undefined"!=typeof dojo?"dojo":"undefined"!=typeof jQuery?"jquery":"";return"dojo"===e?dojo.ready(function(){dojo.query("#ibm-content-main a, #ibm-content-wrapper a").forEach(function(e){try{var i=e.href;(i.indexOf("www.ibm.com/services/forms/")>-1||i.indexOf("www14.software.ibm.com/webapp/iwm/")>-1||i.indexOf(".ibm.com/marketing/iwm/iwm")>-1||i.indexOf(".ibm.com/marketing/iwm/dre")>-1||i.indexOf("/events/wwe/")>-1)&&0===dojo.query(e).closest(".ibm-live-assistance-list").length&&dojo.query(e).attr("onclick","goPage(this);return false;")}catch(e){}})}):"jquery"===e&&jQuery(function(){jQuery("#ibm-content-main a:not([data-ibm-contact]):not([data-ibm-contact] a), #ibm-content-wrapper a:not([data-ibm-contact]):not([data-ibm-contact] a)").each(function(){try{var e=jQuery(this),i=this.href;(i.indexOf("www.ibm.com/services/forms/")>-1||i.indexOf("www14.software.ibm.com/webapp/iwm/")>-1||i.indexOf(".ibm.com/marketing/iwm/iwm")>-1||i.indexOf(".ibm.com/marketing/iwm/dre")>-1||i.indexOf("/events/wwe/")>-1||i.indexOf(".bluemix.net/registration")>-1)&&0===e.closest(".ibm-live-assistance-list").length&&e.attr("onclick","goPage(this);return false;")}catch(e){}})}),{status:"Loaded"}}();

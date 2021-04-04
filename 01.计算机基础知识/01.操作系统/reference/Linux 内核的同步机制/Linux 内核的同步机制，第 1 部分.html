@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)https://www.ibm.com/developerworks/cn/linux/l-synch/part1/ -->
+<html lang="zh-CN" style="" class="applicationcache geolocation history postmessage svg websockets localstorage sessionstorage websqldatabase webworkers hashchange pointerevents canvas audio canvastext video webgl cssgradients multiplebgs opacity rgba inlinesvg hsla supports svgclippaths smil no-touchevents fontface generatedcontent textshadow cssanimations backgroundsize borderimage borderradius boxshadow csscolumns csscolumns-width csscolumns-span csscolumns-fill csscolumns-gap csscolumns-rule csscolumns-rulecolor csscolumns-rulestyle csscolumns-rulewidth csscolumns-breakbefore csscolumns-breakafter csscolumns-breakinside flexbox flexboxlegacy cssreflections csstransforms csstransforms3d csstransitions indexeddb indexeddb-deletedatabase js ibm-v18 ibm-cxtype-3g hires win opera opera9 presto prestof gr__ibm_com ibm-grid-xlarge greater-china-imt"><iframe height="0" width="0" src="javascript:&#39;&lt;script&gt;function i(a){new Image().src = a};i(&quot;https://cms.tanx.com/t.gif?tanx_nid=29600513&amp;tanx_cm&amp;ext_data=200020104&quot;);i(&quot;https://cm.g.doubleclick.net/pixel?google_nid=ipy&amp;google_cm&amp;ext_data=200020104&quot;);i(&quot;https://cyes.youku.com/cm.gif?dspid=11112&amp;s=1&amp;ext_data=200020104&quot;);i(&quot;https://cm.fastapi.net/?dspid=100018&amp;gethuid=1&amp;dspuid=G1PH766EsY_&amp;ext_data=200020104&quot;);i(&quot;https://ckm.aty.sohu.com/cm.gif?ver=1&amp;mid=10012&amp;ext_data=200020104&quot;);i(&quot;https://cm.l.qq.com/?dspid=10016&amp;dspuid=G1LIOs21cjIy&amp;gettuid=1&amp;ext_data=200020104&quot;);&lt;/script&gt;&#39;" name="_pycmifr" style="display: none; visibility: hidden;" src="./Linux 内核的同步机制，第 1 部分_files/saved_resource.html"></iframe><script type="text/javascript" async="" src="./Linux 内核的同步机制，第 1 部分_files/adv"></script><script type="text/javascript" async="" src="./Linux 内核的同步机制，第 1 部分_files/adv(1)"></script><script id="loadedViaBxAnalytics-HU3dbkAG5wE0F1IkRf9S1RexlAqo3jby" src="./Linux 内核的同步机制，第 1 部分_files/analytics.min.js.下载" type="text/javascript" async=""></script><script type="text/javascript" async="" src="./Linux 内核的同步机制，第 1 部分_files/presadv"></script><script async="" src="./Linux 内核的同步机制，第 1 部分_files/a.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_136" src="./Linux 内核的同步机制，第 1 部分_files/survey.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_19" src="./Linux 内核的同步机制，第 1 部分_files/hotjar-42920.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_53" src="./Linux 内核的同步机制，第 1 部分_files/js"></script><script type="text/javascript" async="" charset="utf-8" id="demandbase_js_lib" src="./Linux 内核的同步机制，第 1 部分_files/ab057a07.min.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_162" src="https://www.googletagmanager.com/gtag/js?id=UA-143580012-1"></script><script type="text/javascript" async="" charset="utf-8" id="tealium_cormetrics2" src="./Linux 内核的同步机制，第 1 部分_files/eluminate.js.下载"></script><script src="./Linux 内核的同步机制，第 1 部分_files/bluemix-analytics.min.js.下载" type="application/javascript" async=""></script><script type="text/javascript" async="" charset="utf-8" id="dle_api_ac843b6775e41686a8b71789c1f722317b975b622dc22f8440a65a3b2f6641e8" src="./Linux 内核的同步机制，第 1 部分_files/p_ac843b6775e41686a8b71789c1f722317b975b622dc22f8440a65a3b2f6641e8.js.下载"></script><script src="./Linux 内核的同步机制，第 1 部分_files/p_devwrks.js.下载" type="application/javascript" async=""></script><script src="./Linux 内核的同步机制，第 1 部分_files/p_ac843b6775e41686a8b71789c1f722317b975b622dc22f8440a65a3b2f6641e8.js(1).下载" type="application/javascript" async=""></script><script src="./Linux 内核的同步机制，第 1 部分_files/utag.js.下载" type="application/javascript" async=""></script><script src="./Linux 内核的同步机制，第 1 部分_files/dbdm-data" type="application/javascript" async=""></script><script src="./Linux 内核的同步机制，第 1 部分_files/p_ac843b6775e41686a8b71789c1f722317b975b622dc22f8440a65a3b2f6641e8.js(1).下载" type="application/javascript" async=""></script><script src="./Linux 内核的同步机制，第 1 部分_files/saved_resource" type="application/javascript" async=""></script><script src="./Linux 内核的同步机制，第 1 部分_files/p_ac843b6775e41686a8b71789c1f722317b975b622dc22f8440a65a3b2f6641e8.js.下载" type="application/javascript" async=""></script><script type="text/javascript">Object.defineProperty(window.navigator, 'userAgent', { get: function(){ return 'Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Version/12.14'; } });Object.defineProperty(window.navigator, 'vendor', { get: function(){ return 'Mozilla, Inc.'; } });Object.defineProperty(window.navigator, 'platform', { get: function(){ return 'Windows'; } });</script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+<meta name="viewport" content="width=device-width, initial-scale=1">      
+<link rel="icon" href="https://www.ibm.com/favicon.ico">
+<link rel="canonical" href="http://www.ibm.com/developerworks/cn/linux/l-synch/part1/index.html">
+<meta name="geo.country" content="CN">
+<meta name="dcterms.rights" content="© Copyright IBM Corporation 2005">
+<meta name="dcterms.date" content="2005-08-15">
+<meta name="description" content="本系列文章分两部分，第一部分详细地介绍了 Linux 内核中的同步机制：原子操作、信号量、读写信号量和自旋锁的API，使用要求以及一些典型示例。第二部分将详细介绍在Linux内核中的另外一些同步机制，包括大内核锁、读写锁、大读者锁、RCU和顺序锁。">	
+<meta name="keywords" content="RCU、Read-Copy Update、读写自旋锁、rwlock、spinlock, tttlca">
+<meta name="robots" content="index,follow">
+<title>Linux 内核的同步机制，第 1 部分</title>
+    
+<script> 
+    digitalData = {
+        "page":{
+            "category":{
+                "primaryCategory":"SOFDCLNXCN"
+            },
+            "pageInfo":{
+                "effectiveDate":"2005-08-15",
+                "language":"zh-CN",
+                "publishDate":"2005-08-15",
+                "publisher":"IBM Corporation",
+                "version":"v18",
+                "ibm":{ 
+                    "contentDelivery":"IBM developerWorks template",
+                    "contentProducer":"IBM developerWorks",
+                    "country":"CN",
+                    "owner":"developerWorks/China/IBM",
+                    "siteID":"DEVWRKS",
+                    "subject":"SWGC0",
+                    "type":"CT316",
+                    "topic":"内核",
+                    "topicId":"87",
+                    "contentArea":"linux",
+                    "contentAreaId":"2",
+                    "contentType":"article",
+                    "contentId":"91955",
+                },
+                "keywords":"RCU、Read-Copy Update、读写自旋锁、rwlock、spinlock, tttlca",
+                "description":"本系列文章分两部分，第一部分详细地介绍了 Linux 内核中的同步机制：原子操作、信号量、读写信号量和自旋锁的API，使用要求以及一些典型示例。第二部分将详细介绍在Linux内核中的另外一些同步机制，包括大内核锁、读写锁、大读者锁、RCU和顺序锁。"
+            }
+        }
+    };
+    window._analytics = {
+        "coremetrics": false,
+        "optimizely": false,
+        "googleAddServices": false,
+        "addRoll": false,
+        "intercom": false,
+        "fullStory": false,
+        "hotjar": false,
+        "tealeaf": false,
+        "nps": false,
+        "segment_key": 'HU3dbkAG5wE0F1IkRf9S1RexlAqo3jby'
+    };
+</script>
+	
+    <meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@developerworks">
+<meta property="og:title" content="Linux 内核的同步机制，第 1 部分">
+<meta property="og:description" content="本系列文章分两部分，第一部分详细地介绍了 Linux 内核中的同步机制：原子操作、信号量、读写信号量和自旋锁的API，使用要求以及一些典型示例。第二部分将详细介绍在Linux内核中的另外一些同步机制，包括大内核锁、读写锁、大读者锁、RCU和顺序锁。">
+    <meta property="og:image" content="http://www.ibm.com/developerworks/i/dw-social-201508.png">
+<!-- Segment meta tag -->
+<meta name="segment" property="developerWorks (developerWorks)" producttitle="developerWorks" value="Linux Chinese (developerWorks)">      
+<!-- SITE MON : START (DO NOT DELETE) -->
+<!-- developerWorks monitoring token -->
+<!-- SITE MON : END (DO NOT DELETE) -->
+
+<!-- HEADER_SCRIPTS_AND_CSS_INCLUDE -->
+<!-- <script src="//cdn.optimizely.com/js/5399420604.js"></script> -->
+<!-- BEGIN: Use this section to set page specific variables for the Page Tag -->
+<script language="JavaScript">var NTPT_PGEXTRA="ibmSkillLevel=1&ibmCmaId=91955&ibmContentAreas=linux";</script>
+<!--END -->
+<script src="./Linux 内核的同步机制，第 1 部分_files/ida_stats.js.下载"></script><meta property="og:type" content="website"><meta property="og:url" content="http://www.ibm.com/developerworks/cn/linux/l-synch/part1/index.html"><meta property="og:locale" content="zh-CN"><meta property="og:published_time" content="2005-08-15"><meta property="article:published_time" content="2005-08-15">
+<link href="./Linux 内核的同步机制，第 1 部分_files/www.css" rel="stylesheet">
+<link href="./Linux 内核的同步机制，第 1 部分_files/syntaxhighlighter.css" rel="stylesheet">
+<script src="./Linux 内核的同步机制，第 1 部分_files/www.js.下载"></script><style></style>
+<script src="./Linux 内核的同步机制，第 1 部分_files/syntaxhighlighter.js.下载"></script>    
+<link href="./Linux 内核的同步机制，第 1 部分_files/tables.css" rel="stylesheet">
+<script src="./Linux 内核的同步机制，第 1 部分_files/tables.js.下载"></script>   
+<!--  Masthead/footer  -->
+<link href="./Linux 内核的同步机制，第 1 部分_files/dw-mf-v18.css" rel="stylesheet">
+<!-- <link href="//dw1.s81c.com/developerworks/css/dw-mf/v18/alt-signedin-ux.css" rel="stylesheet" /> -->   
+<!--[if lt IE 9]>
+    <link href="//dw1.s81c.com/developerworks/css/dw-mf/v18/dw-mf-ie8fix.css?v=022216" rel="stylesheet" />
+<![endif]-->
+<link href="./Linux 内核的同步机制，第 1 部分_files/dw-article.css" rel="stylesheet">
+<script src="./Linux 内核的同步机制，第 1 部分_files/dw-auth-properties.js.下载"></script>
+<script src="./Linux 内核的同步机制，第 1 部分_files/dw-auth.js.下载"></script>
+<script src="./Linux 内核的同步机制，第 1 部分_files/dw-mf.js.下载"></script>
+<script src="./Linux 内核的同步机制，第 1 部分_files/dw-include.js.下载"></script>     
+<script src="./Linux 内核的同步机制，第 1 部分_files/dw-article.js.下载"></script>
+<script src="./Linux 内核的同步机制，第 1 部分_files/dw-auto-links.js.下载"></script>     
+<script src="./Linux 内核的同步机制，第 1 部分_files/tactic.js.下载"></script>
+<script src="./Linux 内核的同步机制，第 1 部分_files/tacticbindlinks.js.下载"></script>
+
+<!-- 
+<PageMap>
+    <DataObject type="document">
+        <Attribute name="topic">内核</Attribute>
+        <Attribute name="topicId">87</Attribute>
+        <Attribute name="contentArea">linux</Attribute>
+        <Attribute name="contentAreaId">2</Attribute>
+        <Attribute name="abstract">本系列文章分两部分，第一部分详细地介绍了 Linux 内核中的同步机制：原子操作、信号量、读写信号量和自旋锁的API，使用要求以及一些典型示例。第二部分将详细介绍在Linux内核中的另外一些同步机制，包括大内核锁、读写锁、大读者锁、RCU和顺序锁。</Attribute>
+        <Attribute name="pub.date">2005-08-15</Attribute>
+        <Attribute name="contentType">article</Attribute>
+    </DataObject>
+</PageMap>
+-->        
+
+<style id="ibm-masthead-hidelinks">@media screen and (max-width: 457px) { .ibm-masthead-categories,#ibm-megamenu-sections{display:none} }</style><style id="ibm-sitenav-menu-hidelinks">@media screen and (max-width: 437.75px) {.ibm-sitenav-menu-container .ibm-sitenav-menu-list > ul > li {display:none}}@media screen and (min-width: 438.75px) {.ibm-mobilemenu-sitenavmenu > ul > li {display:none}}</style><style type="text/css" class="jquery-comments-css">.jquery-comments ul.navigation li.active:after {background: #2793e6 !important;</style><style type="text/css" class="jquery-comments-css">.jquery-comments ul.navigation ul.dropdown li.active {background: #2793e6 !important;</style><style type="text/css" class="jquery-comments-css">.jquery-comments .highlight-background {background: #2793e6 !important;</style><style type="text/css" class="jquery-comments-css">.jquery-comments .highlight-font {color: #2793e6 !important;}</style><style type="text/css" class="jquery-comments-css">.jquery-comments .highlight-font-bold {color: #2793e6 !important;font-weight: bold;}</style><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_28" src="./Linux 内核的同步机制，第 1 部分_files/utag.28.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_53" src="./Linux 内核的同步机制，第 1 部分_files/utag.53.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_45" src="./Linux 内核的同步机制，第 1 部分_files/utag.45.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_19" src="./Linux 内核的同步机制，第 1 部分_files/utag.19.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_94" src="./Linux 内核的同步机制，第 1 部分_files/utag.94.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_136" src="./Linux 内核的同步机制，第 1 部分_files/utag.136.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="utag_ibm.web_143" src="./Linux 内核的同步机制，第 1 部分_files/utag.143.js.下载"></script><style type="text/css">@media only screen and (max-width:480px){.truste_box_overlay{width: 100%!important;margin: 0px!important;max-width: 100%!important;box-shadow: rgb(0,0,0,0.2) 0px 0px 16px 2px!important;}}@media only screen and (min-width:481px){.truste_box_overlay{width: 80%!important;margin: 20px auto!important;max-width: 800px!important;box-shadow: rgb(0,0,0,0.2) 0px 0px 16px 2px!important;}}</style><script language="javascript" type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/50200000.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="tealium_visitor_service_45main" src="./Linux 内核的同步机制，第 1 部分_files/016e394ce18b0021c24727f75e1203039003a06b00978"></script><script language="javascript" type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/cookie-id.js.下载"></script><script language="javascript" type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/rules_50200000.js.下载"></script><script language="javascript" type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/dispatcher-v3.js.下载"></script><script type="text/javascript" async="" charset="utf-8" id="tealium_visitor_service_45main" src="./Linux 内核的同步机制，第 1 部分_files/016e394ce18b0021c24727f75e1203039003a06b00978(1)"></script><style type="text/css">.truste_cookie_prefs,#teconsent{display:none !important}</style><script src="./Linux 内核的同步机制，第 1 部分_files/yahoo-min.js.下载" type="text/javascript"></script><script src="./Linux 内核的同步机制，第 1 部分_files/cp-v3.js.下载" type="text/javascript"></script><script src="./Linux 内核的同步机制，第 1 部分_files/json-min.js.下载" type="text/javascript"></script><script async="" src="./Linux 内核的同步机制，第 1 部分_files/modules.5f04b18371f1e255a471.js.下载" charset="utf-8"></script><style type="text/css">iframe#_hjRemoteVarsFrame {display: none !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important;}</style></head>
+<body id="ibm-com" class="ibm-type ibm-sitenav-menu ibm-sitenav-menu-sticky ibm-masthead-sticky ibm-masthead-sticky-showing" data-gr-c-s-loaded="true">
+	
+<div id="ibm-top" class="ibm-landing-page">
+
+<!-- MASTHEAD_BEGIN -->
+<div id="ibm-masthead" role="banner" aria-label="IBM" class="ibm-mhtype-minimal hastransition">
+    <div id="ibm-universal-nav" class="">    
+  
+        <nav role="navigation" aria-label="IBM">
+            <div id="ibm-home"><a href="https://www.ibm.com/cn/zh/?lnk=m">IBM®</a></div>
+            <ul id="ibm-menu-links" role="toolbar" aria-label="站点地图" class="ibm-hide">
+                <li><a href="https://www.ibm.com/sitemap/cn/zh/">站点地图</a></li>
+            </ul><div class="ibm-masthead-rightside"><div id="ibm-search-module" role="search" aria-labelledby="ibm-masthead" class="ibm-has-scope">
+            <div class="ibm-masthead-search-close"><p class="ibm-ind-link ibm-icononly ibm-padding-bottom-0"><a href="https://www.ibm.com/developerworks/cn/linux/l-synch/part1/#" class="ibm-close-link ibm-nospacing">关闭</a></p></div><form id="ibm-search-form" action="https://www.ibm.com/Search/" method="get" aria-labelledby="ibm-masthead">
+                <p>
+                    <label for="q">IBM</label>
+                    <input type="text" maxlength="100" value="" placeholder="搜索" name="q" id="q" aria-label="搜索 IBM Developer" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-owns="ibm-search-typeahead-container"><input name="lnk" type="hidden" value="mhsrch">
+                    <input type="hidden" value="utf" name="en">
+                    <input type="hidden" value="zh" name="lang">
+                    <input type="hidden" value="cn" name="cc">
+                    <input type="hidden" value="20" name="nr">
+                    <input type="hidden" value="For developers" name="tabType[0]">
+                    <span class="ibm-search-scope ibm-fadeout" aria-expanded="true"><input class="ibm-styled-checkbox" data-init="false" type="checkbox" name="sn" value="" id="ibm-mh-scopeoption"> <label for="ibm-mh-scopeoption">In Marketplace</label></span><button role="button" type="submit" id="ibm-search" class="ibm-search-link" value="提交"><span class="ibm-access">提交</span></button>
+                </p>
+            </form><form class="ibm-hide" id="ibm-default-scope-form" action="https://www.ibm.com/search" method="get"><input name="lang" type="hidden" value="zh"><input name="cc" type="hidden" value="cn"><input name="tabType[0]" type="hidden" value="Products"><input name="q" type="text" value=""><input name="lnk" type="hidden" value="mhmpsrch"></form>
+        </div><div id="ibm-search-typeahead-container" aria-expanded="true" class="ibm-search-typeahead-container ibm-fadeout"></div><ul aria-label="Tools" role="menubar" class="ibm-masthead-iconsonly"><li role="presentation" class="ibm-masthead-item-signin"><button role="button" aria-haspopup="true" aria-owns="ibm-signin-minimenu-container" class="ibm-profile-link">我的 IBM</button><ul id="ibm-signin-minimenu-container" role="menu" aria-label="Profile" class="ibm-dropdown-menu">    <li class="ibm-dropdown-menu-primary" role="presentation" data-linktype="notifications">       <a class="" href="https://myibm.ibm.com/dashboard/?lnk=mmi" tabindex="0">我的 IBM</a>     </li>    <li class="ibm-dropdown-menu-primary menu-heading" role="presentation">       <span tabindex="0">IBM Developer</span>     </li>   <li class="ibm-dropdown-menu-primary ibm-signin-alt" role="presentation">     <a href="https://www.ibm.com/developerworks/dwwi/jsp/ssologin.jsp?d=https%3A%2F%2Fwww.ibm.com%2Fdeveloperworks%2Fcn%2Flinux%2Fl-synch%2Fpart1%2F&amp;lang=zh&amp;a=dwmav" role="menuitem">登录</a>   </li>   <li class="ibm-dropdown-menu-primary dw-register-alt" role="presentation">     <a href="https://www.ibm.com/developerworks/dwwi/jsp/ssoregister.jsp?d=https%3A%2F%2Fwww.ibm.com%2Fdeveloperworks%2Fcn%2Flinux%2Fl-synch%2Fpart1%2F&amp;lang=zh&amp;a=dwmav" role="menuitem">注册</a>   </li></ul></li><li role="presentation" class="ibm-masthead-item-menu"><button role="button" aria-haspopup="true" aria-owns="ibm-burger-menu-container" class="ibm-menu-link">站点导航</button></li></ul></div> 
+        </nav>
+  
+        
+       
+    </div>
+</div><div class="ibm-mobilemenu ibm-hide" id="ibm-burger-menu-container" aria-labelledby="ibm-burgermenu-a11y" role="dialog" tabindex="0"><p class="ibm-hide" id="ibm-burgermenu-a11y">站点导航</p><div class="ibm-mobilemenu-close"><p class="ibm-icononly ibm-fright ibm-ind-link ibm-nospacing"><a class="ibm-close-link" href="https://www.ibm.com/developerworks/cn/linux/l-synch/part1/?lnk=hm#">关闭</a></p></div><div class="ibm-mobilemenu-section ibm-mobilemenu-sitenavmenu"><ul role="menubar"><li class="ibm-mobile-section-heading ibm-mobile-sitename">
+        <a href="https://www.ibm.com/developerworks/cn/?lnk=hm">IBM Developer</a>
+    </li>
+            <li role="presentation">
+                <a href="https://www.ibm.com/developerworks/cn/topics/?lnk=hm" role="menuitem" tabindex="0">学习</a>
+            </li>
+            <li role="presentation">       
+                <a href="https://www.ibm.com/developerworks/cn/downloads/?lnk=hm" role="menuitem" tabindex="-1">开发</a>
+            </li>
+            <li role="presentation">       
+                <!-- <a href="//www.ibm.com/developerworks/cn/community/" role="menuitem">社区</a> -->
+                <a href="https://www.ibm.com/developerworks/community/groups/service/html/communityview?communityUuid=3302cc3b-074e-44da-90b1-5055f1dc0d9c&amp;lnk=hm" role="menuitem" tabindex="-1">社区</a>
+            </li>
+            <li class="ibm-sitenav-menu-item-right">
+                <a href="https://www.ibm.com/ibm/cn/partners/start/?lnk=hm" role="menuitem" tabindex="-1">合作</a>
+            </li>
+        </ul></div><div class="ibm-mobilemenu-section"><ul class="ibm-mobilemenu-mhlinks" aria-label="发现 IBM"><li><div data-widget="showhide" data-type="panel" class="ibm-show-hide ibm-widget-processed"><h2><a href="javascript:void();">产品</a></h2><div class="ibm-container-body" style="display: none;"><ul><li><a href="https://www.ibm.com/cn-zh/products/?lnk=hmSTW_CN_THP_P7_TL&amp;lnk2=learn_PHP&amp;psrc=none&amp;pexp=def"><span>市场</span></a></li><li><a href="https://www.ibm.com/cn-zh/products/software?lnk=hmmpr_software_solutions_cnzh&amp;lnk2=learn"><span>软件和解决方案</span></a></li><li><a href="https://www.ibm.com/cn-zh/products/trials/?lnk=hmSTW_CN_THP_P9_TL&amp;lnk2=learn_THP&amp;psrc=none&amp;pexp=def"><span>立即免费试用</span></a></li><li><a href="https://www.ibm.com/analytics/cn/zh/?lnk=hmmpr_bua_cnzh&amp;lnk2=learn"><span>大数据与人工智能</span></a></li><li><a href="https://www.ibm.com/cloud-computing/cn/zh?lnk=hmmpr_bucl_cnzh&amp;lnk2=learn"><span>云计算</span></a></li><li><a href="https://www.ibm.com/ibm/cn/cognitive/outthink/?lnk=hmmpr_buce_cnzh&amp;lnk2=learn"><span>认知</span></a></li><li><a href="https://www.ibm.com/cn-zh/internet-of-things?lnk=hmmpr_iot_cnzh&amp;lnk2=learn"><span>物联网</span></a></li><li><a href="https://www.ibm.com/cn-zh/industries?lnk=hmmpr_ind_cnzh&amp;lnk2=learn"><span>行业解决方案</span></a></li><li><a href="https://www.ibm.com/cn-zh/it-infrastructure?lnk=hmmpr_systems_cnzh&amp;lnk2=learn"><span>IT 基础架构</span></a></li><li><a href="https://www.ibm.com/cn-zh/cloud/mobile?lnk=hmmpr_bumf_cnzh&amp;lnk2=learn"><span>移动</span></a></li><li><a href="https://www.ibm.com/cn-zh/security?lnk=hmmpr_buse_cnzh&amp;lnk2=learn"><span>安全</span></a></li><li><a href="https://www.ibm.com/services/cn/zh/watson/explorer.html?lnk=hmmpr_watson_cnzh&amp;lnk2=learn"><span>Watson</span></a></li><li><a href="https://www.ibm.com/watson/cn-zh/health/?lnk=hmmpr_watson_health_cnzh&amp;lnk2=learn"><span>Watson Health</span></a></li><li><a href="https://www.ibm.com/cn-zh/industries/manufacturing/supply-chain-solutions?lnk=hmmpr_watson_smarts_cnzh&amp;lnk2=learn"><span>Watson 智慧供应链</span></a></li></ul></div></div></li><li><div data-widget="showhide" data-type="panel" class="ibm-show-hide ibm-widget-processed"><h2><a href="javascript:void();">服务</a></h2><div class="ibm-container-body" style="display: none;"><ul><li><a href="https://www.ibm.com/services/cn-zh/digital-reinvention/case/index.html?lnk=hm"><span>企业咨询服务</span></a></li><li><a href="https://www.ibm.com/technologyservices/cn/zh/?lnk=hmmse_ts_cnzh&amp;lnk2=learn#technology-outsourcing"><span>技术服务</span></a></li><li><a href="https://www.ibm.com/financing/cn-zh/index.html?lnk=hmmse_fin_cnzh&amp;lnk2=learn"><span>融资</span></a></li><li><a href="https://www.ibm.com/cn-zh/industries?lnk=hmmpr_ind_cnzh&amp;lnk2=learn"><span>行业解决方案</span></a></li><li><a href="https://www.ibm.com/training/?lnk=hm"><span>培训与技能 (英文)</span></a></li></ul></div></div></li><li><a href="https://www.ibm.com/cn-zh/industries?lnk=hmmpr_ind_cnzh&amp;lnk1=menu">行业</a></li><li><div data-widget="showhide" data-type="panel" class="ibm-show-hide ibm-widget-processed"><h2><a href="javascript:void();">开发者</a></h2><div class="ibm-container-body" style="display: none;"><ul><li><a href="https://developer.ibm.com/cn/?lnk=hm"><span>IBM 开发者</span></a></li><li><a href="https://www.ibm.com/developerworks/cn/cognitive/?lnk=hm"><span>AI</span></a></li><li><a href="https://www.ibm.com/developerworks/cn/analytics/?lnk=hm"><span>大数据与分析</span></a></li><li><a href="https://developer.ibm.com/cn/blockchain/?lnk=hm"><span>区块链</span></a></li><li><a href="https://www.ibm.com/developerworks/cn/cloud/?lnk=hm"><span>云计算</span></a></li><li><a href="https://www.ibm.com/developerworks/cn/opensource/?lnk=hm"><span>开源技术</span></a></li><li><a href="https://www.ibm.com/ibm/cn/partners/start/?masthead=&amp;lnk=hm"><span>云/AI 合作伙伴</span></a></li><li><a href="https://www.ibm.com/partnerworld/?lnk=hmmdev_pw_cnzh&amp;lnk2=learn"><span>PartnerWorld (英文)</span></a></li></ul></div></div></li><li><a href="https://www.ibm.com/cn-zh/campaign/case-studies?lnk=hm">成功案例</a></li><li><a href="https://www.ibm.com/support/cn/zh/?lnk=hmmsu_cnzh">支持</a></li><li><a href="https://www.ibm.com/employment/cn/?lnk=hmmca_cnzh">工作机会</a></li></ul></div></div><div class="ibm-mhplaceholder"></div><!-- MASTHEAD_END -->
+	    
+<!-- LAYOUT -->
+<div id="ibm-content-wrapper">
+    <!-- LEADSPACE_BEGIN -->
+    <header role="banner" aria-labelledby="ibm-pagetitle-h1">
+        
+        <!-- MASTHEAD_SITENAV_BEGIN -->
+        <div class="ibm-sitenav-menu-container" data-widgetprocessed="true">
+    <div class="ibm-sitenav-menu-name">
+        <a href="https://www.ibm.com/developerworks/cn/">IBM Developer</a>
+    </div>
+    <div class="ibm-sitenav-menu-list">
+        <ul role="menubar">
+            <li role="presentation">
+                <a href="https://www.ibm.com/developerworks/cn/topics/" role="menuitem" tabindex="0">学习</a>
+            </li>
+            <li role="presentation">       
+                <a href="https://www.ibm.com/developerworks/cn/downloads/" role="menuitem" tabindex="-1">开发</a>
+            </li>
+            <li role="presentation">       
+                <!-- <a href="//www.ibm.com/developerworks/cn/community/" role="menuitem">社区</a> -->
+                <a href="https://www.ibm.com/developerworks/community/groups/service/html/communityview?communityUuid=3302cc3b-074e-44da-90b1-5055f1dc0d9c" role="menuitem" tabindex="-1">社区</a>
+            </li>
+            <li class="ibm-sitenav-menu-item-right">
+                <a href="https://www.ibm.com/ibm/cn/partners/start/" role="menuitem" tabindex="-1">合作</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- BEGIN IBM DEVELOPER BANNER -->
+<style>
+    #dw-mast-banner {
+        background: #000;
+        box-sizing: border-box;
+    }
+    #dw-mast-banner.ibm-band, #dw-mast-strip.ibm-band { padding: 0; }
+    #dw-mast-banner p { color: #ffffff; margin-left: 1rem; display: inline-block; text-decoration: none; font-size: 1.125rem; }
+    #dw-mast-banner .dw-mast-banner-cta { padding-left: 10px; color: #ed1c24; }
+    #dw-mast-banner .dw-mast-banner-cta::after { content: "\003e"; color: #ed1c24; font-size: 0.875rem; padding-left: 4px; }
+    #dw-mast-banner img { display: inline-block; vertical-align: middle; margin-top: -4px; }
+    #dw-mast-banner .dw-mast-banner-img { margin-left: 16px; } 
+    #dw-mast-strip {
+        background-color: #e9e9e9;
+        box-sizing: border-box;
+    }
+    #dw-mast-strip p { padding: 10px 20px 10px; margin-left: 2rem; color: #000; display: block; text-decoration: none; font-size: 1rem; }
+    
+    @media only screen and (max-width:800px) {
+    #dw-mast-banner p { margin-right: 1rem; }
+    }
+    @media only screen and (max-width:525px) {
+    #dw-mast-banner .dw-mast-banner-cta { padding-left: 4px; }
+    }
+</style>
+<div id="dw-mast-banner" class="ibm-band" style="text-align: center">
+    <a href="https://www.ibm.com/cn-zh/cloud/redhat">
+        <div style="display:inline-block">
+            <img src="./Linux 内核的同步机制，第 1 部分_files/dw-ibmred.png" height="60" width="201" alt="IBM and Red Hat logos">
+            <p class="ibm-plex-sans-semibold">IBM 和 Red Hat - 开放创新的新篇章。 <span class="dw-mast-banner-cta ibm-plex-sans-semibold">了解更多</span></p>
+        </div>
+    </a>
+</div>
+<div id="dw-mast-strip" class="ibm-band" style="text-align: center">
+    <div>        
+        <p>developerWorks 中国 正在向 IBM Developer 过渡。 我们将为您呈现一个全新的界面和更新的主题领域，并一如既往地提供您希望获得的精彩内容。</p>         
+    </div>
+</div>
+<!-- <style>
+    #dw-mast-banner {
+        background-color: #000;
+        /* min-height: 75px; */
+    }  
+    #dw-mast-banner.ibm-band { padding: 0; }
+    #dw-mast-banner .ibm-columns { padding: 0; min-height: 100px; }
+    #dw-mast-banner .dw-mast-banner-txt { padding: 10px 0 0; margin-left: 2rem; color: #4ca7a5; display: inline; } 
+    #dw-mast-banner .dw-mast-banner-cta { padding: 14px 0 0 20px; margin-right: 2rem; color: #4ca7a5; display: inline; }
+    #dw-mast-banner .dw-mast-banner-txt p.ibm-h4 { font-size: 1.125rem; }
+    #dw-mast-banner .dw-mast-banner-txt span { white-space: nowrap; }
+    #dw-mast-banner .ibm-btn-pri {
+        background-color: #000;
+        border: 1px solid #4ca7a5;
+        color: #4ca7a5;
+    }
+    #dw-mast-banner .ibm-btn-pri:hover {
+        background-color: #4ca7a5;
+        color: #fff;
+    }
+    @media only screen and (max-width:1100px) {
+        #dw-mast-banner .dw-mast-banner-cta { padding: 10px 0 0 20px; }
+        #dw-mast-banner .dw-mast-banner-txt p.ibm-h4 { font-size: 1.0rem; }
+    }
+    @media only screen and (max-width:999px) {
+        #dw-mast-banner .dw-mast-banner-txt { margin-left: 0.5rem; } 
+        #dw-mast-banner .dw-mast-banner-cta { margin-right: 0.5rem; }
+    }
+    @media only screen and (max-width:959px) {
+        #dw-mast-banner .dw-mast-banner-txt { margin-left: 2rem; } 
+        #dw-mast-banner .dw-mast-banner-cta { margin-right: 2rem; }
+        #dw-mast-banner .ibm-btn-pri { white-space: nowrap; font-size: .875rem; }
+        #dw-mast-banner .dw-mast-banner-txt p.ibm-h4 {
+            font-size: .9375rem;
+            text-align: center;
+            font-weight: 400;
+        }
+    }
+    @media only screen and (max-width:600px) {
+        #dw-mast-banner .dw-mast-banner-txt { margin-left: 1rem; } 
+        #dw-mast-banner .dw-mast-banner-cta { margin-right: 1rem; }
+    }
+    @media only screen and (max-width:579px) {
+        #dw-mast-banner .dw-mast-banner-txt, #dw-mast-banner .dw-mast-banner-cta { display: block; }
+        #dw-mast-banner .dw-mast-banner-txt { margin-left: 1rem; margin-right: 1rem; } 
+        #dw-mast-banner .dw-mast-banner-cta { margin-right: 0; text-align: center; }
+        #dw-mast-banner .dw-mast-banner-txt p.ibm-h4 { padding: 0; }
+        #dw-mast-banner .dw-mast-banner-cta { padding: 10px 0 0 0; }
+    } 
+</style>
+<div id="dw-mast-banner" class="ibm-band">
+    <div class="ibm-vertical-center">
+        <div class="ibm-center-block ibm-vertical-center">
+            <div class="dw-mast-banner-txt ibm-plex-sans-regular">                
+                <p class="ibm-h4">developerWorks 中国 正在向 IBM Developer 过渡。 我们将为您呈现一个全新的界面和更新的主题领域，并一如既往地提供您希望获得的精彩内容。</p>             
+            </div>
+        </div>
+    </div>
+</div> -->        <!-- MASTHEAD_SITENAV_END -->
+        
+        <!-- NAVIGATION_TRAIL_BEGIN -->
+        <div id="ibm-leadspace-head" class="ibm-alternate">
+            <div id="ibm-leadspace-body">
+                <nav aria-label="Breadcrumb" role="navigation">                     
+                            <ul id="dw-navigation-trail" itemscope="" itemtype="http://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem"><a itemprop="item" href="https://www.ibm.com/developerworks/cn/topics/"><span itemprop="name">学习</span></a><meta itemprop="position" content="1"></li><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem"><a itemprop="item" href="https://www.ibm.com/developerworks/cn/linux/"><span itemprop="name">Linux</span></a><meta itemprop="position" content="2"></li></ul>
+                </nav>
+            </div>
+        </div>
+        <!-- NAVIGATION_TRAIL_END -->
+        
+    </header>
+    <!-- LEADSPACE_END -->
+    
+    <!-- MAIN_CONTENT_BEGIN -->
+    <main role="main" aria-label=""> 
+        <div id="ibm-pcon">
+            <!-- BEGIN_IBM-CONTENT -->
+            <div id="ibm-content">
+                <!-- BEGIN_IBM-CONTENT-BODY -->
+                <div id="ibm-content-body">
+                    <!-- BEGIN_IBM-CONTENT-MAIN -->
+                    <div id="ibm-content-main" class="dw-article">                        
+                        <!-- BEGIN_INTERIOR-COLUMNS -->
+                                <div class="ibm-columns dw-article-toc">
+                                    <!-- LEFT_6_2_CONTENT_COLUMN_BEGIN -->  
+                                    <div id="dw-article-toc-container" class="ibm-col-6-2">
+                                        <div id="dw-article-toc-body" data-widget="scrollable" data-height="85.7998046875" style="width: 460px; height: 85.7998px;" class="ibm-widget-processed"><div class="nano-content" tabindex="-1" style="right: -17px;">
+                                            <h2>内容</h2><div class="ibm-alternate-rule"><hr></div><ul role="directory" aria-label="内容" class="ibm-plain-list"><li class=""><a onclick="tocLink(&#39;#ibm-pagetitle-h1&#39;)" role="link" tabindex="0">概览</a></li><li class=""><a onclick="tocLink(&#39;#N1003B&#39;)" role="link" tabindex="0">一、	引言</a></li><li class=""><a onclick="tocLink(&#39;#N10044&#39;)" role="link" tabindex="0">二、原子操作</a></li><li class="dw-highlight"><a onclick="tocLink(&#39;#N100DC&#39;)" role="link" tabindex="0">三、信号量（semaphore）</a></li><li class=""><a onclick="tocLink(&#39;#N1013C&#39;)" role="link" tabindex="0">四、读写信号量（rw_semaphore）</a></li><li class=""><a onclick="tocLink(&#39;#N1019A&#39;)" role="link" tabindex="0">五、自旋锁（spinlock）</a></li><li class=""><a onclick="tocLink(&#39;#icomments&#39;)" role="link" tabindex="0">评论</a></li></ul>
+                                        </div><div class="nano-pane" style="opacity: 1; visibility: visible; display: none;"><div class="nano-slider" style="height: 21px; transform: translate(0px, 0px);"></div></div></div>
+                                    </div>
+                                    <!-- LEFT_6_2_CONTENT_COLUMN_END -->
+                                    
+                                    <!-- CENTER_6_4_CONTENT_COLUMN_BEGIN -->
+                                    <div class="ibm-col-6-4">
+                                        <h1 id="ibm-pagetitle-h1" class="ibm-h1">Linux 内核的同步机制，第 1 部分</h1>
+                                        <!-- Article Top Bar -->
+                                                <div class="ibm-columns dw-article-topbar">
+                                                    <!-- Author and article info. -->
+                                                    <div class="ibm-col-6-2 ibm-col-medium-6-4 dw-article-metadata">
+                                                        <div class="dw-article-avatar"><img width="42" height="42" src="./Linux 内核的同步机制，第 1 部分_files/dw-author.png" alt=""></div><div class="dw-article-authordate">杨 燚<br><span class="dw-article-pubdate">2005 年 8 月 15 日发布</span></div>
+                                                    </div>
+                                                    <!-- Social -->
+                                                    <div class="ibm-col-6-2 ibm-col-medium-6-4 ibm-col-small-6-2 dw-article-social">
+                                                        <!-- Sharing links -->
+                                                        <div id="dw-article-share-inline">
+                                                            <div class="dw-article-sharelink-inline">
+                                                                <div class="ibm-sharethispage"><h4 class="ibm-bold">分享此页面</h4><p class="ibm-icononly"><a class="ibm-weibo-encircled-link" href="https://service.weibo.com/share/share.php?url=http%3A%2F%2Fwww.ibm.com%2Fdeveloperworks%2Fcn%2Flinux%2Fl-synch%2Fpart1%2Findex.html%&amp;title=Linux%20%E5%86%85%E6%A0%B8%E7%9A%84%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%EF%BC%8C%E7%AC%AC%201%20%E9%83%A8%E5%88%86&amp;language=zh_cn" data-id="weibo" onclick="return IBMCore.common.module.sharethispage.gotoUrl(window.open(), this);">Weibo</a><a class="ibm-googleplus-encircled-link" href="https://plus.google.com/share?url=http%3A%2F%2Fwww.ibm.com%2Fdeveloperworks%2Fcn%2Flinux%2Fl-synch%2Fpart1%2Findex.html&amp;t=Linux%20%E5%86%85%E6%A0%B8%E7%9A%84%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%EF%BC%8C%E7%AC%AC%201%20%E9%83%A8%E5%88%86" data-id="googleplus" onclick="return IBMCore.common.module.sharethispage.gotoUrl(window.open(), this);">Google+</a><a class="ibm-email-encircled-link" href="mailto:?subject=Linux%20%E5%86%85%E6%A0%B8%E7%9A%84%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%EF%BC%8C%E7%AC%AC%201%20%E9%83%A8%E5%88%86&amp;body=http%3A%2F%2Fwww.ibm.com%2Fdeveloperworks%2Fcn%2Flinux%2Fl-synch%2Fpart1%2Findex.html" data-id="email" onclick="">用电子邮件发送本页面</a></p></div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Number of comments and link to comments -->
+                                                        <div id="dw-article-cmts">
+                                                            <div class="dw-article-cmtslink">
+                                                                <a onclick="tocLink(&#39;#icomments&#39;)" href="https://www.ibm.com/developerworks/cn/linux/l-synch/part1/#icomments" role="link" tabindex="0" aria-label="Comments">
+                                                                    <img src="./Linux 内核的同步机制，第 1 部分_files/dw-article-cmt-icon.png" width="29" height="29" alt="Comments">
+                                                                </a>
+                                                            </div>
+                                                            <div class="dw-article-cmtslink">
+                                                                <a onclick="tocLink(&#39;#icomments&#39;)" href="https://www.ibm.com/developerworks/cn/linux/l-synch/part1/#icomments" role="link" tabindex="0">
+                                                                    <div id="nCmts">0</div>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Article Body -->
+                                        
+                                        <h2 id="N1003B" class="ibm-h2">一、	引言</h2><p>在现代操作系统里，同一时间可能有多个内核执行流在执行，因此内核其实象多进程多线程编程一样也需要一些同步机制来同步各执行单元对共享数据的访问。尤其是在多处理器系统上，更需要一些同步机制来同步不同处理器上的执行单元对共享的数据的访问。在主流的Linux内核中包含了几乎所有现代的操作系统具有的同步机制，这些同步机制包括：原子操作、信号量（semaphore）、读写信号量（rw_semaphore）、spinlock、BKL(Big Kernel Lock)、rwlock、brlock（只包含在2.4内核中）、RCU（只包含在2.6内核中）和seqlock（只包含在2.6内核中）。</p><p>本文的下面各章节将详细讲述每一种同步机制的原理、用途、API以及典型应用示例。</p><h2 id="N10044" class="ibm-h2">二、原子操作</h2><p>所谓原子操作，就是该操作绝不会在执行完毕前被任何其他任务或事件打断，也就说，它的最小的执行单位，不可能有比它更小的执行单位，因此这里的原子实际是使用了物理学里的物质微粒的概念。</p><p>原子操作需要硬件的支持，因此是架构相关的，其API和原子类型的定义都定义在内核源码树的include/asm/atomic.h文件中，它们都使用汇编语言实现，因为C语言并不能实现这样的操作。</p><p>原子操作主要用于实现资源计数，很多引用计数(refcnt)就是通过原子操作实现的。</p><p>原子类型定义如下：</p><h5 id="N10053" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_323391" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">typedef struct { volatile int counter; } atomic_t;</code></div></div></td></tr></tbody></table></div></div></div></span><p>volatile修饰字段告诉gcc不要对该类型的数据做优化处理，对它的访问都是对内存的访问，而不是对寄存器的访问。</p><p>原子操作API包括：</p></h5><h5 id="N1005E" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_247253" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">atomic_read(atomic_t * v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量进行原子读操作，它返回原子类型的变量v的值。</p></h5><h5 id="N10067" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_261774" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">atomic_set(atomic_t * v, int i);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数设置原子类型的变量v的值为i。</p></h5><h5 id="N10070" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_373479" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void atomic_add(int i, atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数给原子类型的变量v增加值i。</p></h5><h5 id="N10079" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_715214" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">atomic_sub(int i, atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数从原子类型的变量v中减去i。</p></h5><h5 id="N10082" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_948593" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_sub_and_test(int i, atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数从原子类型的变量v中减去i，并判断结果是否为0，如果为0，返回真，否则返回假。</p></h5><h5 id="N1008B" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_93940" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void atomic_inc(atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型变量v原子地增加1。</p></h5><h5 id="N10094" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_737743" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void atomic_dec(atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地减1。</p></h5><h5 id="N1009D" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_490258" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_dec_and_test(atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地减1，并判断结果是否为0，如果为0，返回真，否则返回假。</p></h5><h5 id="N100A6" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_204214" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_inc_and_test(atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地增加1，并判断结果是否为0，如果为0，返回真，否则返回假。</p></h5><h5 id="N100AF" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_625212" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_add_negative(int i, atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地增加I，并判断结果是否为负数，如果是，返回真，否则返回假。</p></h5><h5 id="N100B8" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_96315" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_add_return(int i, atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地增加i，并且返回指向v的指针。</p></h5><h5 id="N100C1" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_592311" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_sub_return(int i, atomic_t *v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数从原子类型的变量v中减去i，并且返回指向v的指针。</p></h5><h5 id="N100CA" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_708544" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_inc_return(atomic_t * v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地增加1并且返回指向v的指针。</p></h5><h5 id="N100D3" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_643180" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int atomic_dec_return(atomic_t * v);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对原子类型的变量v原子地减1并且返回指向v的指针。</p><p>原子操作通常用于实现资源的引用计数，在TCP/IP协议栈的IP碎片处理中，就使用了引用计数，碎片队列结构struct ipq描述了一个IP碎片，字段refcnt就是引用计数器，它的类型为atomic_t，当创建IP碎片时（在函数ip_frag_create中），使用atomic_set函数把它设置为1，当引用该IP碎片时，就使用函数atomic_inc把引用计数加1，当不需要引用该IP碎片时，就使用函数ipq_put来释放该IP碎片，ipq_put使用函数atomic_dec_and_test把引用计数减1并判断引用计数是否为0，如果是就释放IP碎片。函数ipq_kill把IP碎片从ipq队列中删除，并把该删除的IP碎片的引用计数减1（通过使用函数atomic_dec实现）。</p></h5><h2 id="N100DC" class="ibm-h2">三、信号量（semaphore）</h2><p>Linux内核的信号量在概念和原理上与用户态的System V的IPC机制信号量是一样的，但是它绝不可能在内核之外使用，因此它与System V的IPC机制信号量毫不相干。</p><p>信号量在创建时需要设置一个初始值，表示同时可以有几个任务可以访问该信号量保护的共享资源，初始值为1就变成互斥锁（Mutex），即同时只能有一个任务可以访问信号量保护的共享资源。一个任务要想访问共享资源，首先必须得到信号量，获取信号量的操作将把信号量的值减1，若当前信号量的值为负数，表明无法获得信号量，该任务必须挂起在该信号量的等待队列等待该信号量可用；若当前信号量的值为非负数，表示可以获得信号量，因而可以立刻访问被该信号量保护的共享资源。当任务访问完被信号量保护的共享资源后，必须释放信号量，释放信号量通过把信号量的值加1实现，如果信号量的值为非正数，表明有任务等待当前信号量，因此它也唤醒所有等待该信号量的任务。</p><p>信号量的API有：</p><h5 id="N100E9" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_147676" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">DECLARE_MUTEX(name)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏声明一个信号量name并初始化它的值为0，即声明一个互斥锁。</p></h5><h5 id="N100F2" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_207851" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">DECLARE_MUTEX_LOCKED(name)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏声明一个互斥锁name，但把它的初始值设置为0，即锁在创建时就处在已锁状态。因此对于这种锁，一般是先释放后获得。</p></h5><h5 id="N100FB" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_301814" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void sema_init (struct semaphore *sem, int val);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函用于数初始化设置信号量的初值，它设置信号量sem的值为val。</p></h5><h5 id="N10104" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_507853" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void init_MUTEX (struct semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数用于初始化一个互斥锁，即它把信号量sem的值设置为1。</p></h5><h5 id="N1010D" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_875290" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void init_MUTEX_LOCKED (struct semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数也用于初始化一个互斥锁，但它把信号量sem的值设置为0，即一开始就处在已锁状态。</p></h5><h5 id="N10116" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_85029" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void down(struct semaphore * sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数用于获得信号量sem，它会导致睡眠，因此不能在中断上下文（包括IRQ上下文和softirq上下文）使用该函数。该函数将把sem的值减1，如果信号量sem的值非负，就直接返回，否则调用者将被挂起，直到别的任务释放该信号量才能继续运行。</p></h5><h5 id="N1011F" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_598722" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int down_interruptible(struct semaphore * sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数功能与down类似，不同之处为，down不会被信号（signal）打断，但down_interruptible能被信号打断，因此该函数有返回值来区分是正常返回还是被信号中断，如果返回0，表示获得信号量正常返回，如果被信号打断，返回-EINTR。</p></h5><h5 id="N10128" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_457443" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int down_trylock(struct semaphore * sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数试着获得信号量sem，如果能够立刻获得，它就获得该信号量并返回0，否则，表示不能获得信号量sem，返回值为非0值。因此，它不会导致调用者睡眠，可以在中断上下文使用。</p></h5><h5 id="N10131" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_320863" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void up(struct semaphore * sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数释放信号量sem，即把sem的值加1，如果sem的值为非正数，表明有任务等待该信号量，因此唤醒这些等待者。</p><p>信号量在绝大部分情况下作为互斥锁使用，下面以console驱动系统为例说明信号量的使用。</p><p>在内核源码树的kernel/printk.c中，使用宏DECLARE_MUTEX声明了一个互斥锁console_sem，它用于保护console驱动列表console_drivers以及同步对整个console驱动系统的访问，其中定义了函数acquire_console_sem来获得互斥锁console_sem，定义了release_console_sem来释放互斥锁console_sem，定义了函数try_acquire_console_sem来尽力得到互斥锁console_sem。这三个函数实际上是分别对函数down，up和down_trylock的简单包装。需要访问console_drivers驱动列表时就需要使用acquire_console_sem来保护console_drivers列表，当访问完该列表后，就调用release_console_sem释放信号量console_sem。函数console_unblank，console_device，console_stop，console_start，register_console和unregister_console都需要访问console_drivers，因此它们都使用函数对acquire_console_sem和release_console_sem来对console_drivers进行保护。</p></h5><h2 id="N1013C" class="ibm-h2">四、读写信号量（rw_semaphore）</h2><p>读写信号量对访问者进行了细分，或者为读者，或者为写者，读者在保持读写信号量期间只能对该读写信号量保护的共享资源进行读访问，如果一个任务除了需要读，可能还需要写，那么它必须被归类为写者，它在对共享资源访问之前必须先获得写者身份，写者在发现自己不需要写访问的情况下可以降级为读者。读写信号量同时拥有的读者数不受限制，也就说可以有任意多个读者同时拥有一个读写信号量。如果一个读写信号量当前没有被写者拥有并且也没有写者等待读者释放信号量，那么任何读者都可以成功获得该读写信号量；否则，读者必须被挂起直到写者释放该信号量。如果一个读写信号量当前没有被读者或写者拥有并且也没有写者等待该信号量，那么一个写者可以成功获得该读写信号量，否则写者将被挂起，直到没有任何访问者。因此，写者是排他性的，独占性的。</p><p>读写信号量有两种实现，一种是通用的，不依赖于硬件架构，因此，增加新的架构不需要重新实现它，但缺点是性能低，获得和释放读写信号量的开销大；另一种是架构相关的，因此性能高，获取和释放读写信号量的开销小，但增加新的架构需要重新实现。在内核配置时，可以通过选项去控制使用哪一种实现。</p><p>读写信号量的相关API有：</p><h5 id="N10149" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_462477" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">DECLARE_RWSEM(name)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏声明一个读写信号量name并对其进行初始化。</p></h5><h5 id="N10152" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_40356" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void init_rwsem(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数对读写信号量sem进行初始化。</p></h5><h5 id="N1015B" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_655621" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void down_read(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>读者调用该函数来得到读写信号量sem。该函数会导致调用者睡眠，因此只能在进程上下文使用。</p></h5><h5 id="N10164" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_148905" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int down_read_trylock(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数类似于down_read，只是它不会导致调用者睡眠。它尽力得到读写信号量sem，如果能够立即得到，它就得到该读写信号量，并且返回1，否则表示不能立刻得到该信号量，返回0。因此，它也可以在中断上下文使用。</p></h5><h5 id="N1016D" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_98469" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void down_write(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>写者使用该函数来得到读写信号量sem，它也会导致调用者睡眠，因此只能在进程上下文使用。</p></h5><h5 id="N10176" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_300627" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">int down_write_trylock(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数类似于down_write，只是它不会导致调用者睡眠。该函数尽力得到读写信号量，如果能够立刻获得，就获得该读写信号量并且返回1，否则表示无法立刻获得，返回0。它可以在中断上下文使用。</p></h5><h5 id="N1017F" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_223340" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void up_read(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>读者使用该函数释放读写信号量sem。它与down_read或down_read_trylock配对使用。如果down_read_trylock返回0，不需要调用up_read来释放读写信号量，因为根本就没有获得信号量。</p></h5><h5 id="N10188" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_459945" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void up_write(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>写者调用该函数释放信号量sem。它与down_write或down_write_trylock配对使用。如果down_write_trylock返回0，不需要调用up_write，因为返回0表示没有获得该读写信号量。</p></h5><h5 id="N10191" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_833329" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">void downgrade_write(struct rw_semaphore *sem);</code></div></div></td></tr></tbody></table></div></div></div></span><p>该函数用于把写者降级为读者，这有时是必要的。因为写者是排他性的，因此在写者保持读写信号量期间，任何读者或写者都将无法访问该读写信号量保护的共享资源，对于那些当前条件下不需要写访问的写者，降级为读者将，使得等待访问的读者能够立刻访问，从而增加了并发性，提高了效率。</p><p>读写信号量适于在读多写少的情况下使用，在linux内核中对进程的内存映像描述结构的访问就使用了读写信号量进行保护。在Linux中，每一个进程都用一个类型为task_t或struct task_struct的结构来描述，该结构的类型为struct mm_struct的字段mm描述了进程的内存映像，特别是mm_struct结构的mmap字段维护了整个进程的内存块列表，该列表将在进程生存期间被大量地遍利或修改，因此mm_struct结构就有一个字段mmap_sem来对mmap的访问进行保护，mmap_sem就是一个读写信号量，在proc文件系统里有很多进程内存使用情况的接口，通过它们能够查看某一进程的内存使用情况，命令free、ps和top都是通过proc来得到内存使用信息的，proc接口就使用down_read和up_read来读取进程的mmap信息。当进程动态地分配或释放内存时，需要修改mmap来反映分配或释放后的内存映像，因此动态内存分配或释放操作需要以写者身份获得读写信号量mmap_sem来对mmap进行更新。系统调用brk和munmap就使用了down_write和up_write来保护对mmap的访问。</p></h5><h2 id="N1019A" class="ibm-h2">五、自旋锁（spinlock）</h2><p>自旋锁与互斥锁有点类似，只是自旋锁不会引起调用者睡眠，如果自旋锁已经被别的执行单元保持，调用者就一直循环在那里看是否该自旋锁的保持者已经释放了锁，"自旋"一词就是因此而得名。由于自旋锁使用者一般保持锁时间非常短，因此选择自旋而不是睡眠是非常必要的，自旋锁的效率远高于互斥锁。</p><p>信号量和读写信号量适合于保持时间较长的情况，它们会导致调用者睡眠，因此只能在进程上下文使用（_trylock的变种能够在中断上下文使用），而自旋锁适合于保持时间非常短的情况，它可以在任何上下文使用。如果被保护的共享资源只在进程上下文访问，使用信号量保护该共享资源非常合适，如果对共巷资源的访问时间非常短，自旋锁也可以。但是如果被保护的共享资源需要在中断上下文访问（包括底半部即中断处理句柄和顶半部即软中断），就必须使用自旋锁。</p><p>自旋锁保持期间是抢占失效的，而信号量和读写信号量保持期间是可以被抢占的。自旋锁只有在内核可抢占或SMP的情况下才真正需要，在单CPU且不可抢占的内核下，自旋锁的所有操作都是空操作。</p><p>跟互斥锁一样，一个执行单元要想访问被自旋锁保护的共享资源，必须先得到锁，在访问完共享资源后，必须释放锁。如果在获取自旋锁时，没有任何执行单元保持该锁，那么将立即得到锁；如果在获取自旋锁时锁已经有保持者，那么获取锁操作将自旋在那里，直到该自旋锁的保持者释放了锁。</p><p>无论是互斥锁，还是自旋锁，在任何时刻，最多只能有一个保持者，也就说，在任何时刻最多只能有一个执行单元获得锁。</p><p>自旋锁的API有：</p><h5 id="N101AD" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_260151" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_lock_init(x)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏用于初始化自旋锁x。自旋锁在真正使用前必须先初始化。该宏用于动态初始化。</p></h5><h5 id="N101B6" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_69032" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">DEFINE_SPINLOCK(x)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏声明一个自旋锁x并初始化它。该宏在2.6.11中第一次被定义，在先前的内核中并没有该宏。</p></h5><h5 id="N101BF" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_925777" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">SPIN_LOCK_UNLOCKED</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏用于静态初始化一个自旋锁。</p></h5><h5 id="N101C8" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_720589" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">DEFINE_SPINLOCK(x)等同于spinlock_t x = SPIN_LOCK_UNLOCKED</code></div><div class="line number2 index1 alt1"><code class="htmlscript plain">spin_is_locked(x)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏用于判断自旋锁x是否已经被某执行单元保持（即被锁），如果是，返回真，否则返回假。</p></h5><h5 id="N101D1" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_607056" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_unlock_wait(x)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏用于等待自旋锁x变得没有被任何执行单元保持，如果没有任何执行单元保持该自旋锁，该宏立即返回，否则将循环在那里，直到该自旋锁被保持者释放。</p></h5><h5 id="N101DA" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_196113" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_trylock(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏尽力获得自旋锁lock，如果能立即获得锁，它获得锁并返回真，否则不能立即获得锁，立即返回假。它不会自旋等待lock被释放。</p></h5><h5 id="N101E3" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_541486" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_lock(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏用于获得自旋锁lock，如果能够立即获得锁，它就马上返回，否则，它将自旋在那里，直到该自旋锁的保持者释放，这时，它获得锁并返回。总之，只有它获得锁才返回。</p></h5><h5 id="N101EC" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_468353" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_lock_irqsave(lock, flags)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏获得自旋锁的同时把标志寄存器的值保存到变量flags中并失效本地中断。</p></h5><h5 id="N101F5" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_358170" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_lock_irq(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏类似于spin_lock_irqsave，只是该宏不保存标志寄存器的值。</p></h5><h5 id="N101FE" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_381293" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_lock_bh(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏在得到自旋锁的同时失效本地软中断。</p></h5><h5 id="N10207" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_768255" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_unlock(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏释放自旋锁lock，它与spin_trylock或spin_lock配对使用。如果spin_trylock返回假，表明没有获得自旋锁，因此不必使用spin_unlock释放。</p></h5><h5 id="N10210" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_519005" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_unlock_irqrestore(lock, flags)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏释放自旋锁lock的同时，也恢复标志寄存器的值为变量flags保存的值。它与spin_lock_irqsave配对使用。</p></h5><h5 id="N10219" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_807189" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_unlock_irq(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏释放自旋锁lock的同时，也使能本地中断。它与spin_lock_irq配对应用。</p></h5><h5 id="N10222" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_726210" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_unlock_bh(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏释放自旋锁lock的同时，也使能本地的软中断。它与spin_lock_bh配对使用。</p></h5><h5 id="N1022B" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_978124" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_trylock_irqsave(lock, flags)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏如果获得自旋锁lock，它也将保存标志寄存器的值到变量flags中，并且失效本地中断，如果没有获得锁，它什么也不做。因此如果能够立即获得锁，它等同于spin_lock_irqsave，如果不能获得锁，它等同于spin_trylock。如果该宏获得自旋锁lock，那需要使用spin_unlock_irqrestore来释放。</p></h5><h5 id="N10234" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_793936" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_trylock_irq(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏类似于spin_trylock_irqsave，只是该宏不保存标志寄存器。如果该宏获得自旋锁lock，需要使用spin_unlock_irq来释放。</p></h5><h5 id="N1023D" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_849898" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_trylock_bh(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏如果获得了自旋锁，它也将失效本地软中断。如果得不到锁，它什么也不做。因此，如果得到了锁，它等同于spin_lock_bh，如果得不到锁，它等同于spin_trylock。如果该宏得到了自旋锁，需要使用spin_unlock_bh来释放。</p></h5><h5 id="N10246" class="ibm-h5"><span class="dw-code-nohighlight"><div class="ibm-syntax-container"><div><div id="highlighter_739823" class="syntaxhighlighter  htmlscript"><table border="0" cellpadding="0" cellspacing="0" role="none"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="htmlscript plain">spin_can_lock(lock)</code></div></div></td></tr></tbody></table></div></div></div></span><p>该宏用于判断自旋锁lock是否能够被锁，它实际是spin_is_locked取反。如果lock没有被锁，它返回真，否则，返回假。该宏在2.6.11中第一次被定义，在先前的内核中并没有该宏。</p><p>获得自旋锁和释放自旋锁有好几个版本，因此让读者知道在什么样的情况下使用什么版本的获得和释放锁的宏是非常必要的。</p><p>如果被保护的共享资源只在进程上下文访问和软中断上下文访问，那么当在进程上下文访问共享资源时，可能被软中断打断，从而可能进入软中断上下文来对被保护的共享资源访问，因此对于这种情况，对共享资源的访问必须使用spin_lock_bh和spin_unlock_bh来保护。当然使用spin_lock_irq和spin_unlock_irq以及spin_lock_irqsave和spin_unlock_irqrestore也可以，它们失效了本地硬中断，失效硬中断隐式地也失效了软中断。但是使用spin_lock_bh和spin_unlock_bh是最恰当的，它比其他两个快。</p><p>如果被保护的共享资源只在进程上下文和tasklet或timer上下文访问，那么应该使用与上面情况相同的获得和释放锁的宏，因为tasklet和timer是用软中断实现的。</p><p>如果被保护的共享资源只在一个tasklet或timer上下文访问，那么不需要任何自旋锁保护，因为同一个tasklet或timer只能在一个CPU上运行，即使是在SMP环境下也是如此。实际上tasklet在调用tasklet_schedule标记其需要被调度时已经把该tasklet绑定到当前CPU，因此同一个tasklet决不可能同时在其他CPU上运行。timer也是在其被使用add_timer添加到timer队列中时已经被帮定到当前CPU，所以同一个timer绝不可能运行在其他CPU上。当然同一个tasklet有两个实例同时运行在同一个CPU就更不可能了。</p><p>如果被保护的共享资源只在两个或多个tasklet或timer上下文访问，那么对共享资源的访问仅需要用spin_lock和spin_unlock来保护，不必使用_bh版本，因为当tasklet或timer运行时，不可能有其他tasklet或timer在当前CPU上运行。
+如果被保护的共享资源只在一个软中断（tasklet和timer除外）上下文访问，那么这个共享资源需要用spin_lock和spin_unlock来保护，因为同样的软中断可以同时在不同的CPU上运行。</p><p>如果被保护的共享资源在两个或多个软中断上下文访问，那么这个共享资源当然更需要用spin_lock和spin_unlock来保护，不同的软中断能够同时在不同的CPU上运行。</p><p>如果被保护的共享资源在软中断（包括tasklet和timer）或进程上下文和硬中断上下文访问，那么在软中断或进程上下文访问期间，可能被硬中断打断，从而进入硬中断上下文对共享资源进行访问，因此，在进程或软中断上下文需要使用spin_lock_irq和spin_unlock_irq来保护对共享资源的访问。而在中断处理句柄中使用什么版本，需依情况而定，如果只有一个中断处理句柄访问该共享资源，那么在中断处理句柄中仅需要spin_lock和spin_unlock来保护对共享资源的访问就可以了。因为在执行中断处理句柄期间，不可能被同一CPU上的软中断或进程打断。但是如果有不同的中断处理句柄访问该共享资源，那么需要在中断处理句柄中使用spin_lock_irq和spin_unlock_irq来保护对共享资源的访问。</p><p>在使用spin_lock_irq和spin_unlock_irq的情况下，完全可以用spin_lock_irqsave和spin_unlock_irqrestore取代，那具体应该使用哪一个也需要依情况而定，如果可以确信在对共享资源访问前中断是使能的，那么使用spin_lock_irq更好一些，因为它比spin_lock_irqsave要快一些，但是如果你不能确定是否中断使能，那么使用spin_lock_irqsave和spin_unlock_irqrestore更好，因为它将恢复访问共享资源前的中断标志而不是直接使能中断。当然，有些情况下需要在访问共享资源时必须中断失效，而访问完后必须中断使能，这样的情形使用spin_lock_irq和spin_unlock_irq最好。</p><p>需要特别提醒读者，spin_lock用于阻止在不同CPU上的执行单元对共享资源的同时访问以及不同进程上下文互相抢占导致的对共享资源的非同步访问，而中断失效和软中断失效却是为了阻止在同一CPU上软中断或中断对共享资源的非同步访问。</p><p>本系列文章的第二部分将详细介绍Linux内核中的其他一些同步机制，包括大内核锁、读写锁、大读者锁、RCU和顺序锁。</p><!--CMA ID: 91955--><!--Site ID: 10--><!--XSLT stylesheet used to transform this file: dw-document-html-8.0.xsl-->
+                                        <!-- Article Quiz -->
+                                        
+                                        <!-- Article Resources -->
+                                        
+                                        <!-- Commenting -->
+<!-- INLINE_COMMENTS_BEGIN: -->
+<div class="ibm-alternate-rule"><hr></div>
+<div id="dw-article-cmts-top" class="ibm-columns">
+    <div class="ibm-col-6-2">
+        <h4 id="icomments" class="ibm-h4">评论</h4>
+        <div id="dw-article-cmts-login">
+            <p>添加或订阅评论，请先<a onclick="window.location=userLinks[0].url;" tabindex="0" role="link">登录</a>或<a onclick="window.location=userLinks[1].url;" tabindex="0" role="link">注册</a>。</p>
+        </div>
+    </div>    
+    <div class="ibm-col-6-2" id="dw-notify"> 
+        <input type="checkbox" value="1" name="comment_notification" id="comment_notification" disabled="">
+        <label for="comment_notification" style="color: rgb(204, 204, 204);">有新评论时提醒我</label>	   
+    </div>
+</div>
+
+<div class="dw-article-cmts-container">       
+    <div class="ibm-no-print jquery-comments read-only" id="dw-icomments-container"><div class="commenting-field main"><img src="./Linux 内核的同步机制，第 1 部分_files/user-icon.png" alt="" class="profile-picture round by-current-user"><div class="textarea-wrapper"><span class="close" style="display: none;"><span class="left"></span><span class="right"></span></span><div class="textarea" data-placeholder="添加评论" contenteditable="true" style="height: 3.65em;"></div><div class="control-row" style="display: none;"><span class="send save highlight-background">提交</span></div></div></div><ul class="navigation"><div class="navigation-wrapper"><li data-sort-key="newest" data-container-name="comments" class="active">最新的</li><li data-sort-key="oldest" data-container-name="comments">历史</li><li data-sort-key="popularity" data-container-name="comments">热门</li></div><div class="navigation-wrapper responsive"><li class="title active"><header>最新的</header></li><ul class="dropdown"><li data-sort-key="newest" data-container-name="comments" class="active">最新的</li><li data-sort-key="oldest" data-container-name="comments">历史</li><li data-sort-key="popularity" data-container-name="comments">热门</li></ul></div></ul><div class="data-container" data-container="comments"><ul id="comment-list" class="main"></ul><div class="no-comments no-data"><i class="fa fa-comments fa-2x"></i><br>第一个评论</div></div></div>
+</div>
+<!-- INLINE_COMMENTS_END -->                                        <!-- CENTER_6_4_CONTENT_COLUMN_END -->
+                                    </h5></div>   
+                                </div>
+                        <!--Rating_Meta_BEGIN--><div class="metavalue">static.content.url=http://www.ibm.com/developerworks/js/artrating/</div><div class="metavalue">SITE_ID=10</div><div class="metavalue">Zone=Linux</div><div class="metavalue">ArticleID=91955</div><div class="metavalue">ArticleTitle=Linux 内核的同步机制，第 1 部分</div><div class="metavalue">publish-date=08152005</div><script language="javascript" type="text/javascript">document.write('<div class="metavalue">url='+location.href.replace(/</g,  '%3C')+'</div>');</script><div class="metavalue">url=https://www.ibm.com/developerworks/cn/linux/l-synch/part1/</div><!--Rating_Meta_END-->
+                    </div>
+                    <!-- END_IBM-CONTENT-MAIN -->
+                </div>
+                <!-- END_IBM-CONTENT-BODY -->
+            </div>
+            <!-- END_IBM-CONTENT -->
+        </div>
+        <!-- END_IBM-PCON -->
+    </main>
+    <!-- MAIN_CONTENT_END -->
+    
+    <!-- END_CONTENT-WRAPPER -->	
+</div>
+<!-- FOOTER_BEGIN -->
+<footer role="contentinfo" aria-label="IBM Developer">
+    <div id="dw-footer-module" class="dw-footer-home ibmdeveloper">
+        <section aria-label="参考资料" role="contentinfo">
+            <div class="ibm-columns">
+                <div class="ibm-col-6-1 dw-footer-col-1">
+                    <ul>
+                        <li class="dw-footer-heading" aria-label="IBM Developer"><a href="https://www.ibm.com/developerworks/cn/">IBM <b>Developer</b></a></li>
+                        <li><a href="https://www.ibm.com/developerworks/secure/feedback.jsp?domain=dwchina">站点反馈</a></li>
+                        <li class="dw-footer-newline"><a href="https://www.ibm.com/developerworks/secure/myideas2.jsp?domain=dwchina">我要投稿</a></li>
+                        <li class="dw-footer-newline"><a href="https://www.ibm.com/developerworks/community/report?lang=zh">报告滥用</a></li>
+                        <li class="dw-footer-newline"><a href="https://www.ibm.com/developerworks/cn/community/terms/thirdparty/">第三方提示</a></li>
+                    </ul>
+                    <ul>
+                        <li class="dw-footer-newline"><a href="https://weibo.com/ibmdw/">关注微博</a></li>
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-2">
+                    <ul>
+                        <li class="dw-footer-heading"><a href="https://www-31.ibm.com/ibm/cn/ur/">大学合作</a></li>
+                    </ul>
+                    <ul class="dw-footer-lang" aria-label="选择语言">
+                        <li class="dw-footer-heading">选择语言</li>
+                        <li><a href="https://developer.ibm.com/">English</a></li>
+                        <li><a href="https://www.ibm.com/developerworks/cn/" lang="zh">中文</a></li>
+                        <li><a href="https://www.ibm.com/developerworks/jp/" lang="ja">日本語</a></li>
+                        <li><a href="https://www.ibm.com/developerworks/ru/" lang="ru">Русский</a></li>
+                        <li class="dw-footer-newline"><a href="https://www.ibm.com/developerworks/br/" lang="pt">Português (Brasil)</a></li>
+                        <li><a href="https://www.ibm.com/developerworks/ssa/" lang="es">Español</a></li>
+                        <li><a href="https://developer.ibm.com/kr/" lang="kr">한글</a></li>
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-3"> </div>
+                <div class="ibm-col-6-1 dw-footer-col-4"> </div>
+                <div class="ibm-col-6-1 dw-footer-col-5">
+                    <ul class="dw-footer-categories">
+                        <li class="dw-footer-category">
+                            <a href="https://developer.ibm.com/cn/journey/">Code patterns</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://www.ibm.com/developerworks/cn/views/global/libraryview.jsp">技术文档库</a>
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://www.ibm.com/developerworks/cn/downloads/">软件下载</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://developer.ibm.com/cn/">开发者中心</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://www.ibm.com/developerworks/cn/rss/">订阅源</a>  
+                        </li>
+
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-6">
+                    <ul class="dw-footer-categories">
+                        <li class="dw-footer-category">
+                            <a href="https://www.pages03.net/ibmdeveloperworks/developerWorksChina-NewsletterSubscriptionPage-secure18rev1/">时事通讯</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://developer.ibm.com/cn/tv/">视频</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://developer.ibm.com/cn/blogs/">博客</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="https://developer.ibm.com/cn/events/">活动</a>  
+                        </li>                        
+                        <li class="dw-footer-category">
+                            <a href="https://www.ibm.com/developerworks/cn/community/">社区</a>  
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div id="dw-footer" class="ibm-padding-normal ibm-alternate">
+        <div class="ibm-columns">
+            <div class="ibm-col-1-1">
+                <div class="dw-footer-corporate-links">
+                <ul>
+                    <li><a href="https://www.ibm.com/contact/cn/zh/">联系 IBM</a></li>
+                    <li><a href="https://www.ibm.com/privacy/cn/zh/">隐私条约</a></li>
+                    <li><a href="https://www.ibm.com/developerworks/cn/community/terms/use/">使用条款</a></li>
+                    <li><a href="https://www.ibm.com/accessibility/cn/zh/">信息无障碍选项</a></li>
+                    <li class="ibm-feedbacklink"><a href="https://www.ibm.com/developerworks/cn/linux/l-synch/part1/#">反馈</a></li>
+                    <li id="ibm-truste-cp"><a onclick="truste.eu.clickListener();return false;" href="https://www.ibm.com/developerworks/cn/linux/l-synch/part1/#">Cookie 首选项</a></li>
+                </ul>                 
+                </div>    
+            </div>
+        </div>
+    </div>        
+</footer> <!-- FOOTER_END -->
+
+<!-- END_IBM-TOP -->
+</div>
+
+<!-- SCRIPTS_INCLUDE_BEGIN -->
+<!-- Styles -->
+<link rel="stylesheet" type="text/css" href="./Linux 内核的同步机制，第 1 部分_files/jquery-comments.css">
+<link rel="stylesheet" href="./Linux 内核的同步机制，第 1 部分_files/font-awesome.min.css">
+
+<!-- Libraries -->
+<script type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/jquery-comments.min.js.下载"></script>
+<script type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/moment-with-locales.js.下载"></script>
+<script type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/ContentComments.js.下载"></script>
+<script type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/ContentCommentsFormatter.js.下载"></script>
+<script type="text/javascript" language="JavaScript">
+
+	IBMCore.common.module.masthead.subscribe("ready", "customjs", setupCommentsPlugin).runAsap(setupCommentsPlugin);
+
+	function setupCommentsPlugin(){
+		//debugger;
+			//alert(userLinks);
+			var commentsInitInfo = {
+				contentId : $("div[class=metavalue]:contains('ArticleID=')").text().split("=")[1],
+				siteId :  $("div[class=metavalue]:contains('SITE_ID=')").text().split("=")[1],
+				pluginDivId : '#dw-icomments-container',
+				notifyElementId : "#comment_notification",
+				loginMessageDivId : "#dw-article-cmts-login",
+				totalCommentsDivId : "#nCmts",
+						isIdea:false
+
+			};				
+								
+			ContentComments.Setup(commentsInitInfo);
+	}
+</script>
+
+<!-- SCRIPTS_INCLUDE_END -->
+
+
+
+<div id="ibm-overlay-backdrop"></div><div id="ibm-mobilemenu-screen"></div><div id="teconsent" class="truste_cookie_prefs" style="position: fixed; display: none; height: 40px; background-color: #ffffff; z-index: 9999999999; bottom: 0; right: 0; margin: 0; padding: 0 16px; line-height: 40px; vertical-align: middle; box-shadow:0 0 10px 3px rgba(0,0,0,.1)" consent="undefined"><script type="text/javascript" src="./Linux 内核的同步机制，第 1 部分_files/notice" id="truste_0.5595652305429115"></script><script async="async" type="text/javascript" crossorigin="" src="./Linux 内核的同步机制，第 1 部分_files/v1.7-220"></script><a id="icon-id02722453065612005" tabindex="0" role="button" lang="zh" style="cursor: pointer; font-family: ibm-plex-sans; font-size: 12pt; color: #3d3d3d; text-decoration: none">Cookie 喜好设置</a></div><div id="survey-overlay-backdrop" style="opacity: 0.5;background: #111;bottom: 0;left: 0;position: fixed;right: 0; top: 0; z-index: 900; display:none"></div><script async="" src="./Linux 内核的同步机制，第 1 部分_files/js(1)" id="mm_pp_background"></script><iframe name="trustarc_notice" id="trustarcNoticeFrame" src="./Linux 内核的同步机制，第 1 部分_files/get.html" style="display: none;"></iframe><iframe src="./Linux 内核的同步机制，第 1 部分_files/iframe.html" id="mm_sync_back_ground" style="visibility: hidden; display: none;"></iframe><img src="./Linux 内核的同步机制，第 1 部分_files/s.gif"><iframe name="_hjRemoteVarsFrame" title="_hjRemoteVarsFrame" id="_hjRemoteVarsFrame" src="./Linux 内核的同步机制，第 1 部分_files/box-74dcf4e32eff343c96838bf3a780ac1d.html" style="display: none !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important;"></iframe></body></html>
